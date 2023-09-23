@@ -25,6 +25,8 @@ const LOGO = `
 
 const prompt = "> "
 
+var hadError = false
+
 func main() {
     args := os.Args[1:]
 
@@ -46,6 +48,10 @@ func runFile(path string) {
         os.Exit(1)
     }
     run(string(data))
+
+    if hadError != false {
+        os.Exit(65)
+    }
 }
 
 func runPrompt() {
@@ -72,9 +78,20 @@ func runPrompt() {
             break
         }
         run(line)
+
+        hadError = false
     }
 }
 
 func run(source string) {
     fmt.Printf("%s\n", source)
+}
+
+func Error(line int, msg string) {
+    Report(line, "", msg)
+}
+
+func Report(line int, where string, msg string) {
+    fmt.Fprintf(os.Stderr, "[line %d] Error %s: %s\n", line, where, msg)
+    hadError = true
 }
