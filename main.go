@@ -1,10 +1,11 @@
 package main
 
 import (
-    "bufio"
-    "fmt"
-    "os"
-    "os/user"
+	"bufio"
+	"fmt"
+	"os"
+	"os/user"
+	"glox/scanner"
 )
 
 const LOGO = `
@@ -41,7 +42,6 @@ func main() {
 }
 
 func runFile(path string) {
-    fmt.Printf("Running on %s...\n", path)
     data, err := os.ReadFile(path)
     if err != nil {
         fmt.Fprintf(os.Stderr, "Filepath '%s' specified wrong. Please re-check...\n", path)
@@ -84,7 +84,12 @@ func runPrompt() {
 }
 
 func run(source string) {
-    fmt.Printf("%s\n", source)
+    s := scanner.New(source)
+    tokens := s.ScanTokens()
+
+    for _, t := range tokens {
+        fmt.Println(t)
+    }
 }
 
 func Error(line int, msg string) {
