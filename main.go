@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/user"
+    "glox/error"
 	"glox/scanner"
 )
 
@@ -25,8 +26,6 @@ const LOGO = `
 
 
 const prompt = "> "
-
-var hadError = false
 
 func main() {
     args := os.Args[1:]
@@ -49,7 +48,7 @@ func runFile(path string) {
     }
     run(string(data))
 
-    if hadError != false {
+    if error.HadError != false {
         os.Exit(65)
     }
 }
@@ -79,7 +78,7 @@ func runPrompt() {
         }
         run(line)
 
-        hadError = false
+        error.HadError = false
     }
 }
 
@@ -90,13 +89,4 @@ func run(source string) {
     for _, t := range tokens {
         fmt.Println(t)
     }
-}
-
-func Error(line int, msg string) {
-    Report(line, "", msg)
-}
-
-func Report(line int, where string, msg string) {
-    fmt.Fprintf(os.Stderr, "[line %d] Error %s: %s\n", line, where, msg)
-    hadError = true
 }

@@ -1,7 +1,7 @@
 package scanner
 
 import (
-    "fmt"
+    "glox/error"
     "glox/token"
 )
 
@@ -54,8 +54,7 @@ func (s *Scanner) scanToken() {
     case '*':
         s.addToken(token.STAR)
     default:
-        // TODO: throw error. Can't use error function from main.go because of import cycle
-        fmt.Printf("line %d: unexpected character '%s'.", s.line, string(ch))
+        error.Error(s.line, "Unexpected character: " + string(ch))
         break
     }
 }
