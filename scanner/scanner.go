@@ -19,8 +19,19 @@ func New(input string) *Scanner {
     return s
 }
 
+func (s *Scanner) isEOF() bool {
+    return s.current >= len(s.source)
+}
+
+func (s *Scanner) peek() byte {
+    if s.isEOF() {
+        return '\000'
+    }
+    return s.source[s.current]
+}
+
 func (s *Scanner) ScanTokens() []token.Token {
-    for s.current < len(s.source) {
+    for !s.isEOF() {
         s.start = s.current
         s.scanToken()
     }
@@ -53,10 +64,48 @@ func (s *Scanner) scanToken() {
         s.addToken(token.SEMICOLON)
     case '*':
         s.addToken(token.STAR)
+    case '!':
+        s.matchAndAddToken('=', token.BANG_EQUAL, token.BANG)
+    case '=':
+        s.matchAndAddToken('=', token.EQUAL_EQUAL, token.EQUAL)
+    case '<':
+        s.matchAndAddToken('=', token.LESS_EQUAL, token.LESS)
+    case '>':
+        s.matchAndAddToken('=', token.GREATER_EQUAL, token.GREATER)
+    case '/':
+        if s.match('/') {
+            // ignore comments
+            for s.peek() != '\n' && !s.isEOF() {
+                s.advance()
+            }
+        } else {
+            s.addToken(token.SLASH)
+        }
+    case ' ':
+    case '\r':
+    case '\t':
+    case '\n':
+        s.line++
     default:
         error.Error(s.line, "Unexpected character: " + string(ch))
         break
     }
+}
+
+func (s *Scanner) matchAndAddToken(expected byte, newToken token.TokenType, defaultToken token.TokenType) {
+    if s.match(expected) {
+        s.addToken(newToken)
+    } else {
+        s.addToken(defaultToken)
+    }
+}
+
+func (s *Scanner) match(expected byte) bool {
+    if s.isEOF() || s.source[s.current] != expected {
+        return false
+    }
+    s.current++
+    return true
 }
 
 func (s *Scanner) advance() byte {
