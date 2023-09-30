@@ -74,6 +74,7 @@ func runPrompt() {
 
         line := scanner.Text()  // returns most recent token scanned. Token here is a string of bytes (the line of code you just typed)
         if line == "" {
+            fmt.Printf("Exiting...\n")
             break
         }
         run(line)

@@ -86,11 +86,37 @@ func (s *Scanner) scanToken() {
     case '\t':
     case '\n':
         s.line++
+    case '"':
+        s.string()
     default:
         error.Error(s.line, "Unexpected character: " + string(ch))
         break
     }
 }
+
+func (s *Scanner) string() {
+    for s.peek() != '"' && !s.isEOF() {
+        if s.peek() == '\n' {
+            s.line++
+        }
+        s.advance()
+    }
+
+    if s.isEOF() {
+        error.Error(s.line, "Unterminated string.")
+        return
+    }
+
+    // skip closing "
+    s.advance()
+
+    val := s.source[s.start + 1 : s.current - 1]
+    s.addToken2(token.STRING, val)
+}
+
+// ---------------------------------------------------------------------
+//              GENERAL UTILS
+// ---------------------------------------------------------------------
 
 func (s *Scanner) matchAndAddToken(expected byte, newToken token.TokenType, defaultToken token.TokenType) {
     if s.match(expected) {
