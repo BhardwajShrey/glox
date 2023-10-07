@@ -1,8 +1,9 @@
 package scanner
 
 import (
-    "glox/error"
-    "glox/token"
+	"glox/error"
+	"glox/token"
+	"strconv"
 )
 
 type Scanner struct {
@@ -28,6 +29,13 @@ func (s *Scanner) peek() byte {
         return '\000'
     }
     return s.source[s.current]
+}
+
+func (s *Scanner) peekNext() byte {
+    if s.current + 1 >= len(s.source) {
+        return '\000'
+    }
+    return s.source[s.current + 1]
 }
 
 func (s *Scanner) ScanTokens() []token.Token {
@@ -89,9 +97,30 @@ func (s *Scanner) scanToken() {
     case '"':
         s.string()
     default:
-        error.Error(s.line, "Unexpected character: " + string(ch))
+        if isDigit(ch) {
+            s.number()
+        } else {
+            error.Error(s.line, "Unexpected character: " + string(ch))
+        }
         break
     }
+}
+
+func (s *Scanner) number() {
+    for isDigit(s.peek()) {
+        s.advance()    
+    }
+    
+    if s.peek() == '.' && isDigit(s.peekNext()) {
+        s.advance()
+
+        for isDigit(s.peek()) {
+            s.advance()
+        }
+    }
+    
+    num, _ := strconv.ParseFloat(s.source[s.start : s.current], 64)
+    s.addToken2(token.NUM, num)
 }
 
 func (s *Scanner) string() {
@@ -112,6 +141,10 @@ func (s *Scanner) string() {
 
     val := s.source[s.start + 1 : s.current - 1]
     s.addToken2(token.STRING, val)
+}
+
+func isDigit(ch byte) bool {
+    return ch >= '0' && ch <= '9'
 }
 
 // ---------------------------------------------------------------------
