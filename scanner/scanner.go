@@ -99,11 +99,26 @@ func (s *Scanner) scanToken() {
     default:
         if isDigit(ch) {
             s.number()
+        } else if isAlpha(ch) {
+            s.identifier()
         } else {
             error.Error(s.line, "Unexpected character: " + string(ch))
         }
         break
     }
+}
+
+func (s *Scanner) identifier() {
+    for isAlphaNum(s.peek()) {
+        s.advance()
+    }
+
+    text := s.source[s.start : s.current]
+    tokenType, ok := keywords[text]
+    if !ok {
+        tokenType = token.IDENT
+    }
+    s.addToken(tokenType)
 }
 
 func (s *Scanner) number() {
@@ -147,9 +162,36 @@ func isDigit(ch byte) bool {
     return ch >= '0' && ch <= '9'
 }
 
+func isAlpha(ch byte) bool {
+    return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_'
+}
+
+func isAlphaNum(ch byte) bool {
+    return isAlpha(ch) || isDigit(ch)
+}
+
 // ---------------------------------------------------------------------
 //              GENERAL UTILS
 // ---------------------------------------------------------------------
+
+var keywords = map[string]token.TokenType {
+    "and": token.AND,
+    "class": token.CLASS,
+    "else": token.ELSE,
+    "false": token.FALSE,
+    "for": token.FOR,
+    "func": token.FUNC,
+    "if": token.IF,
+    "nil": token.NIL,
+    "or": token.OR,
+    "print": token.PRINT,
+    "return": token.RETURN,
+    "super": token.SUPER,
+    "this": token.THIS,
+    "true": token.TRUE,
+    "var": token.VAR,
+    "while": token.WHILE,
+}
 
 func (s *Scanner) matchAndAddToken(expected byte, newToken token.TokenType, defaultToken token.TokenType) {
     if s.match(expected) {
